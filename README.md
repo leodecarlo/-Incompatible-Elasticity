@@ -3,7 +3,8 @@
 This repository contains a Firedrake implementation of numerical experiments related to the model developed in:
 
 > Samuel Amstutz and Nicolas van Goethem,  
-> **A second-order model of small-strain incompatible elasticity**.
+> ***A second-order model of small-strain incompatible elasticity***, Mathematics and Mechanics of Solids, Volume 29, Issue 3
+> <https://doi.org/10.1177/10812865231193427>.
 
 The model describes small-strain continua in which the strain field may be incompatible. In this framework, the strain is treated as a primary geometric quantity, and the incompatibility of the strain plays a central role. This is motivated by materials with microscopic defects, such as dislocations, where incompatible deformations can arise at the macroscopic level.
 
@@ -413,15 +414,7 @@ python3 hct_traction.py \
     -options_left 0
 ```
 
-### Refined necking example
 
-```bash
-python3 hct_traction.py \
-    --problem necking \
-    --clscale 0.0132 \
-    --n_iterates 50 \
-    --scale_displacement 5 \
-    -options_left 0
 ```
 
 ### Inclusion / inhomogeneity example
@@ -434,21 +427,6 @@ python3 hct_traction.py \
     -options_left 0
 ```
 
-## Suggested workflow for modifying the README
-
-From the local repository directory:
-
-```bash
-cd /home/ldc/Incompatible-Elasticity
-cp README.md README_old.md
-cp /path/to/this/file/README.md README.md
-
-git status
-git diff README.md
-git add README.md
-git commit -m "Expand README"
-git push origin main
-```
 
 ## Reference
 
@@ -464,4 +442,4 @@ Original FreeFEM code:
 
 This is a research-code repository. The code is intended for experimentation, comparison with the FreeFEM implementation, and further development of Firedrake-based formulations for incompatible elasticity and incompatibility-driven plasticity.
 
-The HCT-based implementation is the main current path. The Regge option is present as an alternative finite element choice, but should be treated as experimental unless verified for the specific problem and parameter choices being used.
+The HCT-based implementation is the main current path. The Regge option is present as an alternative finite element choice, but should be treated as experimental.
