@@ -7,11 +7,11 @@ This repository contains a Firedrake implementation of numerical experiments rel
 
 The model describes small-strain continua in which the strain field may be incompatible. In this framework, the strain is treated as a primary geometric quantity, and the incompatibility of the strain plays a central role. This is motivated by materials with microscopic defects, such as dislocations, where incompatible deformations can arise at the macroscopic level.
 
-This repository is a Firedrake version of the FreeFEM implementation available at:
+The repository is related to the original FreeFEM implementation available at:
 
 <https://github.com/samuel-amstutz/incompatibility>
 
-The aim of the code is to reproduce and explore the numerical examples of the incompatible-elasticity / incompatibility-driven plasticity model using Firedrake finite element tools.
+The present code is not a literal line-by-line translation of the FreeFEM files. Instead, it gives a Firedrake implementation of the same family of numerical examples, using Firedrake finite element spaces, Firedrake mesh handling, and Firedrake output tools.
 
 ## Mathematical background
 
@@ -45,7 +45,9 @@ The energy contains both a classical elastic contribution and a second-order inc
 A E · E + D inc(E) · inc(E),
 ```
 
-where `A` is the usual elastic tensor and `D` is the incompatibility-related tensor. The code also includes an internal scalar variable `theta`, which controls the effective tangent moduli and is updated during the alternating minimization procedure.
+where `A` is the usual elastic tensor and `D` is the incompatibility-related tensor.
+
+The code also includes an internal scalar variable `theta`, called the compatibility modulus in the paper. This variable controls the effective tangent moduli and is updated during the alternating minimization procedure. The script outputs both mechanical fields and diagnostic quantities such as the von Mises stress squared and the yield-stress margin.
 
 ## Repository structure
 
@@ -58,6 +60,40 @@ where `A` is the usual elastic tensor and `D` is the incompatibility-related ten
 └── meshes/
 ```
 
+## Implementation overview
+
+The main point of the Firedrake implementation is that the three numerical examples are handled by a single driver script:
+
+```text
+hct_traction.py
+```
+
+Although the file is named after the traction problem, it contains implementations of the three configurations:
+
+```text
+traction
+necking
+inclusion
+```
+
+These are selected with the command-line option:
+
+```bash
+--problem
+```
+
+The correspondence with the original FreeFEM repository is:
+
+```text
+Original FreeFEM file        Firedrake command
+---------------------------------------------------------------
+traction.edp                 python3 hct_traction.py --problem traction
+necking.edp                  python3 hct_traction.py --problem necking
+inhomogeneity.edp            python3 hct_traction.py --problem inclusion
+```
+
+Thus, despite the name `hct_traction.py`, the Firedrake code is not limited to the traction example. The same Python file also includes the necking and inclusion/inhomogeneity configurations.
+
 ## Main files
 
 ### `hct_traction.py`
@@ -67,7 +103,9 @@ Main Firedrake script.
 This file contains the numerical implementation of the model. It defines:
 
 - the Firedrake imports and finite element setup,
+- the command-line interface,
 - the mesh loading,
+- the boundary labels,
 - the strain and incompatibility operators,
 - the elastic and incompatibility-dependent material coefficients,
 - the mixed finite element formulation,
@@ -75,7 +113,7 @@ This file contains the numerical implementation of the model. It defines:
 - the update of the internal variable `theta`,
 - and the output of the computed fields.
 
-The script supports three problem choices:
+The script supports the following problem choices:
 
 ```text
 traction
@@ -83,14 +121,14 @@ necking
 inclusion
 ```
 
-These correspond to the main numerical examples in the FreeFEM implementation and in the paper:
+The meaning of the choices is:
 
 ```text
 Firedrake option        Mathematical / numerical example
 --------------------------------------------------------
 --problem traction      perforated plate under uniaxial traction
 --problem necking       traction problem with necking geometry
---problem inclusion     plate with inclusion under shear
+--problem inclusion     plate with inclusion / inhomogeneity
 ```
 
 Typical command-line usage is:
@@ -101,7 +139,7 @@ python3 hct_traction.py --problem necking
 python3 hct_traction.py --problem inclusion
 ```
 
-The script also accepts several options, including:
+The script also accepts several options:
 
 ```text
 --problem
@@ -142,6 +180,8 @@ The default is:
 ```text
 --incomp_strain_elt HCT
 ```
+
+The HCT formulation is the main implementation currently used by the example runs. The Regge option is present in the code, but some comments in the script indicate that parts of the Regge/DG formulation are still experimental or to be completed.
 
 The update of `theta` can be performed with either:
 
@@ -253,13 +293,13 @@ It excludes common temporary files, Python bytecode, editor backup files, LaTeX 
 
 These output files are generated by running the simulations and can be regenerated when needed.
 
-## Relation with the FreeFEM code
+## Relation with the original FreeFEM code
 
-This repository is a Firedrake reimplementation of the FreeFEM code available at:
+The original FreeFEM implementation is available at:
 
 <https://github.com/samuel-amstutz/incompatibility>
 
-The FreeFEM repository contains the original scripts:
+The original repository contains the scripts:
 
 ```text
 traction.edp
@@ -267,7 +307,7 @@ necking.edp
 inhomogeneity.edp
 ```
 
-The corresponding Firedrake choices are organized through the `--problem` option:
+In this Firedrake repository, the corresponding examples are handled by the single driver script `hct_traction.py` through the option `--problem`:
 
 ```text
 FreeFEM file              Firedrake problem option
@@ -277,7 +317,9 @@ necking.edp               --problem necking
 inhomogeneity.edp         --problem inclusion
 ```
 
-The Firedrake code is not intended to be a literal line-by-line translation. It reformulates the same family of numerical experiments using Firedrake syntax, Firedrake finite element spaces, and Firedrake output tools.
+Therefore, the repository can be described as a Firedrake implementation of the numerical examples from the FreeFEM repository, organized in one Python script rather than in three separate `.edp` files.
+
+The Firedrake code uses Firedrake-specific finite element spaces, syntax, solver interfaces, mesh handling, and output routines. It should therefore be regarded as a Firedrake reimplementation of the same examples, not as a literal line-by-line translation.
 
 ## Requirements
 
@@ -382,7 +424,7 @@ python3 hct_traction.py \
     -options_left 0
 ```
 
-### Inclusion example
+### Inclusion / inhomogeneity example
 
 ```bash
 python3 hct_traction.py \
@@ -390,6 +432,22 @@ python3 hct_traction.py \
     --clscale 0.1 \
     --n_iterates 10 \
     -options_left 0
+```
+
+## Suggested workflow for modifying the README
+
+From the local repository directory:
+
+```bash
+cd /home/ldc/Incompatible-Elasticity
+cp README.md README_old.md
+cp /path/to/this/file/README.md README.md
+
+git status
+git diff README.md
+git add README.md
+git commit -m "Expand README"
+git push origin main
 ```
 
 ## Reference
@@ -405,3 +463,5 @@ Original FreeFEM code:
 ## Status
 
 This is a research-code repository. The code is intended for experimentation, comparison with the FreeFEM implementation, and further development of Firedrake-based formulations for incompatible elasticity and incompatibility-driven plasticity.
+
+The HCT-based implementation is the main current path. The Regge option is present as an alternative finite element choice, but should be treated as experimental unless verified for the specific problem and parameter choices being used.
