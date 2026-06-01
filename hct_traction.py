@@ -13,7 +13,7 @@ import argparse
 ## To deal with the division by zero issue using except RunTimeWarning: i.e. to catch a 
 ## warning as if it were an exception
 import warnings
-warnings.filterwarnings("error")
+warnings.filterwarnings("error", category=RuntimeWarning)
 import matplotlib.pyplot as plt
 import time
 import argparse
@@ -165,6 +165,23 @@ else: ## necking
             dm.setLabelValue(dmcommon.FACE_SETS_LABEL, face, TOP)
         else:
             dm.setLabelValue(dmcommon.FACE_SETS_LABEL, face, PERFORATIONS)
+
+
+## Refresh Firedrake's cached exterior-facet marker list after manual relabelling.
+marker_ids = dm.getLabelIdIS(dmcommon.FACE_SETS_LABEL)
+
+if marker_ids is None:
+    raise RuntimeError("No exterior boundary markers were created.")
+
+msh.exterior_facets.unique_markers = sorted(
+    int(marker) for marker in marker_ids.indices
+)
+
+print(
+    "Boundary markers recognised by Firedrake:",
+    msh.exterior_facets.unique_markers
+)
+
 
 if problem == "inclusion":
     mu_A_inside = 1e-3
@@ -726,7 +743,7 @@ for increment in range(n_iterates):
     ## TODO if make this linear solve a numerically nonlinear solve using solve(): interpolate 
     ## new_Ei etc. into the trial functions here
 
-    i## Eq. (42)
+    ## Eq. (42)
     #Form = (
     bilin = (
     ## NOTE inc need not commute with the application of D! So cannot take inc of D(Ei) here.
