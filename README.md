@@ -434,9 +434,15 @@ Samuel Amstutz and Nicolas van Goethem,
 **A second-order model of small-strain incompatible elasticity**.  
 HAL: <https://hal.science/hal-03581050>
 
-Original FreeFEM code:
-
+Original FreeFEM code:  
 <https://github.com/samuel-amstutz/incompatibility>
+
+Code attribution:  
+The original forked implementation from which this code was adapted was written by  
+**Francis Aznaran**, GitHub user **FAznaran**:  
+<https://github.com/FAznaran>   
+
+
 
 ## Status
 
